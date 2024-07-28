@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import sqlite3
+import matplotlib.pyplot as plt
 
 class GoalieAgg:
 
@@ -109,15 +110,67 @@ goalie_df = obj.get_everything()
 
 with sqlite3.connect('goalies.db') as conn:
     goalie_df.to_sql('goalies', conn, if_exists='replace', index=False)
+    goalie_df.to_csv('goalieAgg.csv')
 
 # Connect to the database
 conn = sqlite3.connect('goalies.db')
 
+'''
+query for all goalies with at least 300 games started
+sort by:
+wins
+shutouts
+save percentage
+'''
+
+sort = input("Sort by: ")
+
 # Query the database and load the result into a DataFrame
-df = pd.read_sql_query("SELECT * FROM goalies LIMIT 5", conn)
+df = pd.read_sql_query(f"SELECT * FROM goalies WHERE gamesStarted >= 300 ORDER BY {sort} DESC", conn)
+
+df.to_csv(f"sorted_by_{sort}.csv", index=False)
+
+brodeur = df.index[df['goalieFullName'] == 'Martin Brodeur'].tolist()
+gump = df.index[df['goalieFullName'] == 'Gump Worsley'].tolist()
+roy = df.index[df['goalieFullName'] == 'Patrick Roy'].tolist()
+hasek = df.index[df['goalieFullName'] == 'Dominik Hasek'].tolist()
+osgood = df.index[df['goalieFullName'] == 'Chris Osgood'].tolist()
+hank = df.index[df['goalieFullName'] == 'Henrik Lundqvist'].tolist()
+
+print("Martin Brodeur ranks: ", brodeur)
+print("Gump Worsley ranks: ", gump)
+print("Patrick Roy ranks: ", roy)
+print("Dominik Hasek ranks: ", hasek)
+print("Chris Osgood ranks: ", osgood)
+print("Henrik Lundqvist ranks: ", hank)
+
+# Select the top 5 rows after sorting
+top_5 = df.head(5)
+
+# Create a horizontal bar chart
+plt.figure(figsize=(20, 6))
+bars = plt.barh(top_5['goalieFullName'], top_5[sort], color='skyblue')
+plt.xlabel(sort)
+plt.title(f"Top 5 Goalies by {sort.capitalize()}")
+plt.gca().invert_yaxis()  # Invert y-axis to have the highest value at the top
+
+# Add value labels at the end of each bar
+for bar in bars:
+    plt.text(
+        bar.get_width(),
+        bar.get_y() + bar.get_height() / 2,
+        f'{bar.get_width():.4f}',  # Format the value to 2 decimal places
+        va='center'
+    )
+
+# plt.xlim(left=0.918, right=0.925)
+
+plt.show()
+
+print("Amount of goalies: ", len(df))
 
 # Close the connection
 conn.close()
 
 # Return the DataFrame
-print(df)
+# print(df)
