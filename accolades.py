@@ -22,6 +22,9 @@ def get_trophy_count(player_id, trophy_name):
 
     return 0
 
+def get_all_stars(playerName):
+    return 0
+
 def vezinas(player_id):
     return get_trophy_count(player_id, "Vezina Trophy")
 
@@ -35,10 +38,31 @@ def jennings(player_id):
     return get_trophy_count(player_id, 'William M. Jennings Trophy')
 
 
+def allstardict():
+    df = pd.read_csv('GoalieAllStars.csv')
+
+    # Select the first two columns
+    subset_df = df[['Name', 'GP']]
+
+    # Update the dictionary
+    name_gp_dict = subset_df.set_index('Name')['GP'].to_dict()
+
+    return name_gp_dict
+
+allStarDict = allstardict()
+
+def allstars(playerName):
+    try:
+        return allStarDict[playerName]
+    except KeyError:
+        return 0
+
+
 # Add the new columns to the DataFrame using the defined functions
-df['Vezina Trophies'] = df['playerId'].apply(vezinas)
-df['Stanley Cups'] = df['playerId'].apply(stanleycups)
-df['Conn Smythe Trophies'] = df['playerId'].apply(connsmythes)
-df['William M. Jennings Trophies'] = df['playerId'].apply(jennings)
+# df['Vezina Trophies'] = df['playerId'].apply(vezinas)
+# df['Stanley Cups'] = df['playerId'].apply(stanleycups)
+# df['Conn Smythe Trophies'] = df['playerId'].apply(connsmythes)
+# df['William M. Jennings Trophies'] = df['playerId'].apply(jennings)
+df['All Stars'] = df['goalieFullName'].apply(allstars)
 
 df.to_csv('accolades.csv', index=False)
