@@ -4,21 +4,21 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # Load the CSV file into a DataFrame
-full_df = pd.read_csv('formula.csv')
+full_df = pd.read_csv('recipe.csv')
 
 # Filter the DataFrame for goalies with at least 300 games started
 df = full_df[full_df['gamesStarted'] >= 300]
 print(df.shape)
 
 # Define the columns for max and min calculations
-columns_for_max = ['gamesStarted', 'shutouts', 'wins', 'qualityStart', 'qualityStartsPct', 'gamesRelievedWins',
+columns_for_max = ['gamesStarted', 'savePct', 'shutouts', 'wins', 'qualityStart', 'qualityStartsPct', 'gamesRelievedWins',
                    'Vezina Trophies', 'Stanley Cups', 'Conn Smythe Trophies', 'William M. Jennings Trophies', 'All Stars',
                    'goalsAgainst', 'goalsAgainstAverage']
-# columns_for_min = ['goalsAgainst', 'goalsAgainstAverage']
+columns_for_min = ['goalsAgainst', 'goalsAgainstAverage']
 
 # Create a dictionary of extreme values (max and min)
 extreme_values = {col: df[col].max() for col in columns_for_max}
-# extreme_values.update({col: df[col].min() for col in columns_for_min})
+extreme_values.update({col: df[col].min() for col in columns_for_min})
 
 def goalieScore(row, extreme_values):
     # Example calculation using multiple columns
@@ -34,20 +34,20 @@ def goalieScore(row, extreme_values):
 
     for i in extreme_values:
         if i in ["goalsAgainst", "goalsAgainstAverage"]:
-            stats_score += (extreme_values[i] - row[i]) / extreme_values[i]
+            stats_score += extreme_values[i] / row[i]
         elif i in ['gamesStarted', 'shutouts', 'wins', 'qualityStart', 'qualityStartsPct', 'gamesRelievedWins']:
             stats_score += row[i] / extreme_values[i]
         elif i in ['Vezina Trophies', 'Stanley Cups', 'Conn Smythe Trophies', 'William M. Jennings Trophies', 'All Stars']:
-            if i == 'Vezina Trophies':
-                accolade_score += 0.4 * (vezinas / extreme_values[i])
+            if i == 'Conn Smythe Trophies':
+                accolade_score += 0.5 * (conn_smythes / extreme_values[i])
             elif i == 'Stanley Cups':
-                accolade_score += 0.3 * (stanley_cups / extreme_values[i])
-            elif i == 'Conn Smythe Trophies':
-                accolade_score += 0.2 * (conn_smythes / extreme_values[i])
+                accolade_score += 0.4 * (stanley_cups / extreme_values[i])
+            elif i == 'Vezina Trophies':
+                accolade_score += 0.3 * (vezinas / extreme_values[i])
             elif i == 'William M. Jennings Trophies':
-                accolade_score += 0.1 * (jennings / extreme_values[i])
+                accolade_score += 0.2 * (jennings / extreme_values[i])
             elif i == 'All Stars':
-                accolade_score += 0.05 * (allStars / extreme_values[i])
+                accolade_score += 0.1 * (allStars / extreme_values[i])
 
     return (accolade_score + 1) * stats_score
 
